@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigQuery Release Notes Hub</title>
+    <meta name="description" content="A premium web dashboard to fetch, search, filter, and tweet Google Cloud BigQuery release notes.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0b0f19;
+            --bg-card: rgba(23, 31, 51, 0.7);
+            --border-card: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --primary: #6366f1; /* Indigo */
+            --primary-glow: rgba(99, 102, 241, 0.15);
+            --accent: #06b6d4; /* Cyan */
+            --accent-glow: rgba(6, 182, 212, 0.15);
+            --success: #10b981; /* Emerald */
+            --warning: #f59e0b; /* Amber */
+            --danger: #ef4444; /* Rose */
+            --change: #a855f7; /* Purple */
+            --announcement: #3b82f6; /* Blue */
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 40%);
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        header {
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-card);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 1.25rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px var(--primary-glow);
+            font-weight: 700;
+            color: white;
+            font-size: 1.25rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(to right, #f8fafc, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Search input & selector container */
+        .search-container {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .search-bar {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-card);
+            border-radius: 10px;
+            color: var(--text-primary);
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            width: 250px;
+            outline: none;
+            transition: all 0.3s ease;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 0.75rem center;
+            background-size: 1.1rem;
+        }
+
+        .search-bar:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .filter-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-card);
+            border-radius: 10px;
+            color: var(--text-primary);
+            padding: 0.5rem 1.5rem 0.5rem 1rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: calc(100% - 0.75rem) center;
+            background-size: 0.8rem;
+        }
+
+        .filter-select:focus {
+            border-color: var(--primary);
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary), #4f46e5);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            font-weight: 500;
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(99, 102, 241, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-card);
+            color: var(--text-primary);
+            box-shadow: none;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            box-shadow: none;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            padding: 2rem;
+            gap: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .notes-column {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            min-width: 0; /* Prevents overflow */
+        }
+
+        .composer-column {
+            flex: 1;
+            position: sticky;
+            top: 5.5rem;
+            height: calc(100vh - 7.5rem);
+            min-width: 350px;
+            max-width: 450px;
+        }
+
+        /* Glassmorphic card design */
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-card);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Release Date Card */
+        .date-card {
+            padding: 1.5rem;
+        }
+
+        .date-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.75rem;
+        }
+
+        .date-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .date-title svg {
+            color: var(--accent);
+            width: 1.2rem;
+            height: 1.2rem;
+        }
+
+        .feed-link {
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .feed-link:hover {
+            color: var(--accent);
+        }
+
+        /* Sub-updates (Sections) list */
+        .updates-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .update-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 1.25rem;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .update-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(4px);
+        }
+
+        .update-item.selected {
+            background: rgba(99, 102, 241, 0.08);
+            border-color: var(--primary);
+            box-shadow: 0 0 16px rgba(99, 102, 241, 0.15) inset;
+        }
+
+        .update-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        /* Custom pills */
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border: 1px solid transparent;
+        }
+
+        .pill-feature {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .pill-announcement {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--announcement);
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .pill-issue {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+
+        .pill-breaking {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .pill-change {
+            background: rgba(168, 85, 247, 0.1);
+            color: var(--change);
+            border-color: rgba(168, 85, 247, 0.2);
+        }
+
+        .pill-update {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .select-indicator {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .update-item.selected .select-indicator {
+            border-color: var(--primary);
+            background-color: var(--primary);
+        }
+
+        .select-indicator svg {
+            width: 12px;
+            height: 12px;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .update-item.selected .select-indicator svg {
+            opacity: 1;
+        }
+
+        /* Rendered HTML inside update item */
+        .update-body {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .update-body p {
+            margin-bottom: 0.5rem;
+        }
+
+        .update-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        .update-body code {
+            font-family: monospace;
+            background: rgba(255, 255, 255, 0.07);
+            padding: 0.15rem 0.3rem;
+            border-radius: 4px;
+            color: #f1f5f9;
+        }
+
+        .update-body a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px dashed rgba(6, 182, 212, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .update-body a:hover {
+            color: white;
+            border-bottom-color: white;
+        }
+
+        .update-body ul, .update-body ol {
+            margin-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .update-body li {
+            margin-bottom: 0.25rem;
+        }
+
+        /* Tweet Composer Panel */
+        .composer-card {
+            padding: 1.5rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border-color: var(--primary-glow);
+        }
+
+        .composer-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.75rem;
+        }
+
+        .composer-header svg {
+            width: 24px;
+            height: 24px;
+            color: white; /* X Logo is white */
+        }
+
+        .composer-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+
+        .composer-instructions {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .tweet-textarea {
+            width: 100%;
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-card);
+            border-radius: 12px;
+            color: white;
+            padding: 1rem;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: none;
+            outline: none;
+            transition: all 0.3s ease;
+            line-height: 1.5;
+            margin-bottom: 0.75rem;
+        }
+
+        .tweet-textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .composer-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .char-counter {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .char-counter.error {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .composer-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        .btn.loading .spinner {
+            display: inline-block;
+        }
+        
+        .btn.loading .btn-text {
+            display: none;
+        }
+
+        /* Loader Overlay for initial load */
+        .loader-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5rem 0;
+            gap: 1rem;
+        }
+
+        .main-loader {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-card);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loader-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Empty / Error state */
+        .empty-state {
+            padding: 4rem 2rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        .empty-desc {
+            color: var(--text-secondary);
+            max-width: 400px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            background: rgba(16, 185, 129, 0.95);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            font-weight: 500;
+            font-size: 0.9rem;
+            z-index: 1000;
+            transform: translateY(150%);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+        }
+
+        /* Responsive styling */
+        @media (max-width: 992px) {
+            .main-container {
+                flex-direction: column;
+            }
+            .composer-column {
+                position: static;
+                height: auto;
+                max-width: 100%;
+                width: 100%;
+            }
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+            .header-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-container {
+                flex-direction: row;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-logo">
+            <div class="logo-icon">BQ</div>
+            <h1>BigQuery Release Notes Hub</h1>
+        </div>
+        <div class="header-actions">
+            <div class="search-container">
+                <input type="text" id="search-input" class="search-bar" placeholder="Search release notes...">
+                <select id="filter-type" class="filter-select">
+                    <option value="all">All Types</option>
+                    <option value="feature">Features</option>
+                    <option value="announcement">Announcements</option>
+                    <option value="issue">Issues</option>
+                    <option value="breaking">Breaking Changes</option>
+                    <option value="change">Changes</option>
+                </select>
+            </div>
+            <button id="refresh-btn" class="btn">
+                <span class="spinner"></span>
+                <span class="btn-text">
+                    <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.235"></path>
+                    </svg>
+                    Refresh Notes
+                </span>
+            </button>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- Release notes list column -->
+        <div class="notes-column" id="notes-container">
+            <div class="loader-container" id="initial-loader">
+                <div class="main-loader"></div>
+                <div class="loader-text">Fetching latest release notes from Google Cloud...</div>
+            </div>
+        </div>
+
+        <!-- Tweet composer column -->
+        <div class="composer-column">
+            <div class="glass-card composer-card">
+                <div class="composer-header">
+                    <!-- X Logo (SVG) -->
+                    <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                    <span class="composer-title">Compose Update Tweet</span>
+                </div>
+                <p class="composer-instructions">
+                    Select any release note on the left. The composer will automatically format a Tweet draft for you. You can edit the text before posting.
+                </p>
+                <textarea id="tweet-box" class="tweet-textarea" placeholder="Select an update or type your tweet here..."></textarea>
+                <div class="composer-footer">
+                    <div id="char-count" class="char-counter">0 / 280</div>
+                    <div class="composer-actions">
+                        <button id="copy-btn" class="btn btn-outline" title="Copy to clipboard">
+                            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                            </svg>
+                            Copy
+                        </button>
+                        <button id="tweet-btn" class="btn">
+                            <!-- X icon -->
+                            <svg style="width: 14px; height: 14px;" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                            Tweet
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast message -->
+    <div id="toast" class="toast">
+        <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span id="toast-text">Copied to clipboard!</span>
+    </div>
+
+    <script>
+        // State
+        let allEntries = [];
+        let activeFilterType = 'all';
+        let searchQuery = '';
+        let selectedUpdateId = null;
+
+        // Elements
+        const notesContainer = document.getElementById('notes-container');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const searchInput = document.getElementById('search-input');
+        const filterType = document.getElementById('filter-type');
+        const tweetBox = document.getElementById('tweet-box');
+        const charCount = document.getElementById('char-count');
+        const copyBtn = document.getElementById('copy-btn');
+        const tweetBtn = document.getElementById('tweet-btn');
+        const toast = document.getElementById('toast');
+        const toastText = document.getElementById('toast-text');
+
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchReleaseNotes();
+        });
+
+        // Event Listeners
+        refreshBtn.addEventListener('click', () => {
+            fetchReleaseNotes(true);
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase();
+            renderReleaseNotes();
+        });
+
+        filterType.addEventListener('change', (e) => {
+            activeFilterType = e.target.value;
+            renderReleaseNotes();
+        });
+
+        tweetBox.addEventListener('input', () => {
+            updateCharCount();
+        });
+
+        copyBtn.addEventListener('click', () => {
+            const text = tweetBox.value;
+            if (!text.trim()) {
+                showToast("Please select or compose a tweet first!", true);
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Tweet copied to clipboard!");
+            }).catch(err => {
+                showToast("Failed to copy text.", true);
+            });
+        });
+
+        tweetBtn.addEventListener('click', () => {
+            const text = tweetBox.value;
+            if (!text.trim()) {
+                showToast("Please select or compose a tweet first!", true);
+                return;
+            }
+            if (text.length > 280) {
+                showToast("Tweet exceeds the 280-character limit!", true);
+                return;
+            }
+            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+            window.open(twitterUrl, '_blank');
+        });
+
+        // Toast Helper
+        function showToast(message, isError = false) {
+            toastText.textContent = message;
+            if (isError) {
+                toast.style.background = 'rgba(239, 68, 68, 0.95)';
+            } else {
+                toast.style.background = 'rgba(16, 185, 129, 0.95)';
+            }
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Fetch API
+        async function fetchReleaseNotes(isRefresh = false) {
+            if (isRefresh) {
+                refreshBtn.classList.add('loading');
+                refreshBtn.disabled = true;
+            }
+            
+            try {
+                const response = await fetch('/api/releases');
+                const data = await response.json();
+                
+                if (data.success) {
+                    allEntries = data.entries;
+                    renderReleaseNotes();
+                } else {
+                    renderErrorState(data.error);
+                }
+            } catch (err) {
+                renderErrorState(err.message);
+            } finally {
+                if (isRefresh) {
+                    refreshBtn.classList.remove('loading');
+                    refreshBtn.disabled = false;
+                }
+            }
+        }
+
+        // Parser for content XML
+        function parseEntryContent(contentHtml) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(contentHtml, 'text/html');
+            const sections = [];
+            let currentSection = null;
+
+            doc.body.childNodes.forEach(node => {
+                if (node.nodeType === Node.ELEMENT_NODE && node.tagName.toLowerCase() === 'h3') {
+                    if (currentSection) {
+                        sections.push(currentSection);
+                    }
+                    currentSection = {
+                        type: node.textContent.trim(),
+                        content: ''
+                    };
+                } else {
+                    if (!currentSection) {
+                        currentSection = {
+                            type: 'Update',
+                            content: ''
+                        };
+                    }
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        // Ensure all anchors open in a new tab
+                        node.querySelectorAll('a').forEach(a => {
+                            a.setAttribute('target', '_blank');
+                            a.setAttribute('rel', 'noopener noreferrer');
+                            let href = a.getAttribute('href');
+                            if (href && href.startsWith('/')) {
+                                a.setAttribute('href', 'https://cloud.google.com' + href);
+                            }
+                        });
+                        currentSection.content += node.outerHTML;
+                    } else if (node.nodeType === Node.TEXT_NODE) {
+                        currentSection.content += node.textContent;
+                    }
+                }
+            });
+
+            if (currentSection) {
+                sections.push(currentSection);
+            }
+            return sections;
+        }
+
+        function getRawText(html) {
+            const temp = document.createElement('div');
+            temp.innerHTML = html;
+            return temp.textContent || temp.innerText || "";
+        }
+
+        // Render functions
+        function renderReleaseNotes() {
+            notesContainer.innerHTML = '';
+            
+            if (allEntries.length === 0) {
+                renderEmptyState();
+                return;
+            }
+
+            let renderedCount = 0;
+
+            allEntries.forEach((entry, entryIdx) => {
+                const parsedSections = parseEntryContent(entry.content);
+                
+                // Filter sections based on search and type
+                const filteredSections = parsedSections.filter(section => {
+                    const matchesType = activeFilterType === 'all' || section.type.toLowerCase() === activeFilterType;
+                    
+                    const rawContentText = getRawText(section.content).toLowerCase();
+                    const matchesSearch = rawContentText.includes(searchQuery) || 
+                                          section.type.toLowerCase().includes(searchQuery) ||
+                                          entry.title.toLowerCase().includes(searchQuery);
+                    
+                    return matchesType && matchesSearch;
+                });
+
+                if (filteredSections.length === 0) return;
+
+                renderedCount++;
+
+                // Create Date Card
+                const dateCard = document.createElement('div');
+                dateCard.className = 'glass-card date-card';
+
+                const dateHeader = document.createElement('div');
+                dateHeader.className = 'date-card-header';
+                
+                dateHeader.innerHTML = `
+                    <div class="date-title">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>${entry.title}</span>
+                    </div>
+                    <a href="${entry.link}" class="feed-link" target="_blank" title="Open source release note page">
+                        <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                        </svg>
+                    </a>
+                `;
+                dateCard.appendChild(dateHeader);
+
+                const updatesList = document.createElement('div');
+                updatesList.className = 'updates-list';
+
+                filteredSections.forEach((section, secIdx) => {
+                    const uniqueId = `${entryIdx}-${secIdx}`;
+                    
+                    const updateItem = document.createElement('div');
+                    updateItem.className = `update-item ${selectedUpdateId === uniqueId ? 'selected' : ''}`;
+                    updateItem.dataset.id = uniqueId;
+                    
+                    // Determine pill class
+                    const cleanType = section.type.toLowerCase();
+                    let pillClass = 'pill-update';
+                    if (['feature', 'announcement', 'issue', 'breaking', 'change'].includes(cleanType)) {
+                        pillClass = `pill-${cleanType}`;
+                    }
+
+                    updateItem.innerHTML = `
+                        <div class="update-meta">
+                            <span class="pill ${pillClass}">${section.type}</span>
+                            <div class="select-indicator">
+                                <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="update-body">
+                            ${section.content}
+                        </div>
+                    `;
+
+                    // Handle selection
+                    updateItem.addEventListener('click', () => {
+                        selectUpdate(uniqueId, entry.title, section.type, section.content, entry.link);
+                    });
+
+                    updatesList.appendChild(updateItem);
+                });
+
+                dateCard.appendChild(updatesList);
+                notesContainer.appendChild(dateCard);
+            });
+
+            if (renderedCount === 0) {
+                renderEmptyState();
+            }
+        }
+
+        function selectUpdate(id, date, type, htmlContent, link) {
+            // If clicking the already selected, deselect
+            if (selectedUpdateId === id) {
+                selectedUpdateId = null;
+                tweetBox.value = '';
+                updateCharCount();
+                renderReleaseNotes();
+                return;
+            }
+
+            selectedUpdateId = id;
+            
+            // Format tweet draft
+            const maxTweetLength = 280;
+            const hashtags = "#BigQuery #GoogleCloud";
+            
+            // Formulate base prefix & suffix
+            const prefix = `BigQuery [${date}] (${type}): `;
+            const suffix = `\n\nRead more: ${link}\n${hashtags}`;
+            
+            const rawText = getRawText(htmlContent).trim();
+            const availableLength = maxTweetLength - prefix.length - suffix.length;
+            
+            let contentText = rawText;
+            if (contentText.length > availableLength) {
+                contentText = contentText.substring(0, availableLength - 3) + '...';
+            }
+
+            tweetBox.value = `${prefix}${contentText}${suffix}`;
+            updateCharCount();
+            
+            // Re-render to show selection highlight
+            renderReleaseNotes();
+        }
+
+        function updateCharCount() {
+            const count = tweetBox.value.length;
+            charCount.textContent = `${count} / 280`;
+            if (count > 280) {
+                charCount.classList.add('error');
+            } else {
+                charCount.classList.remove('error');
+            }
+        }
+
+        function renderEmptyState() {
+            notesContainer.innerHTML = `
+                <div class="glass-card empty-state">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div class="empty-title">No release notes found</div>
+                    <div class="empty-desc">We couldn't find any release notes matching "${searchQuery}" or filter type "${filterType.options[filterType.selectedIndex].text}". Try adjusting your filters.</div>
+                </div>
+            `;
+        }
+
+        function renderErrorState(errorMessage) {
+            notesContainer.innerHTML = `
+                <div class="glass-card empty-state" style="border-color: rgba(239, 68, 68, 0.3);">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="color: var(--danger);">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <div class="empty-title" style="color: var(--danger)">Error Fetching Release Notes</div>
+                    <div class="empty-desc">${errorMessage}</div>
+                    <button class="btn btn-outline" onclick="fetchReleaseNotes()">Try Again</button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
